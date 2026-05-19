@@ -1,0 +1,9 @@
+numpy>=1.24
+scipy>=1.10
+statsmodels>=0.14
+networkx>=3.0
+matplotlib>=3.7
+plotly>=5.14
+streamlit>=1.28
+pandas>=2.0
+jupyter>=1.0
