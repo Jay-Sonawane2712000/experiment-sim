@@ -15,38 +15,52 @@ def simulate_users(n_users, seed, effect_size):
     group = rng.choice(["control", "treatment"], size=n_users, p=[0.5, 0.5])
 
     # Log-normal location reflects typical e-commerce revenue centered around tens of dollars.
-    revenue_mu = 3.5
+    propensity_mu = 3.5
 
-    # High log-normal spread captures the right-skew caused by a small number of high-value buyers.
-    revenue_sigma = 1.2
+    # User-level propensity captures persistent customer value: casual shoppers and loyal buyers.
+    propensity_sigma = 1.0
 
-    # Pre-period revenue is used later for variance reduction and imbalance diagnostics.
-    pre_experiment_revenue = rng.lognormal(
-        mean=revenue_mu,
-        sigma=revenue_sigma,
+    # CUPED requires a pre-experiment covariate that predicts experiment-period revenue. In
+    # e-commerce, past spending is usually predictive of future spending, so we intentionally
+    # simulate positive correlation between pre- and post-experiment revenue.
+    user_spending_propensity = rng.lognormal(
+        mean=propensity_mu,
+        sigma=propensity_sigma,
         size=n_users,
     )
 
+    # Moderate pre-period noise reflects normal purchase timing variation before the experiment.
+    pre_noise_sigma = 0.55
+
+    # Setting log-noise mean to -sigma^2 / 2 keeps the multiplier centered around 1 in dollars.
+    pre_noise_mu = -(pre_noise_sigma**2) / 2
+
+    # Pre-period revenue is used later for variance reduction and imbalance diagnostics.
+    pre_experiment_revenue = user_spending_propensity * rng.lognormal(
+        mean=pre_noise_mu,
+        sigma=pre_noise_sigma,
+        size=n_users,
+    )
+
+    # Moderate post-period noise keeps revenue realistic while preserving user-level predictability.
+    post_noise_sigma = 0.55
+
+    # Centered post noise keeps the baseline mean tied to long-run customer spending propensity.
+    post_noise_mu = -(post_noise_sigma**2) / 2
+
     # The control post-period represents the counterfactual baseline purchase behavior.
-    baseline_post_revenue = rng.lognormal(
-        mean=revenue_mu,
-        sigma=revenue_sigma,
+    baseline_post_revenue = user_spending_propensity * rng.lognormal(
+        mean=post_noise_mu,
+        sigma=post_noise_sigma,
         size=n_users,
     )
 
     # Treatment lift is modeled multiplicatively because product changes often affect spend proportionally.
     treatment_multiplier = 1 + effect_size
 
-    # Additional post-period noise reflects week-to-week purchase volatility unrelated to treatment.
-    treatment_noise = rng.lognormal(
-        mean=0.0,
-        sigma=0.2,
-        size=n_users,
-    )
-
     post_experiment_revenue = np.where(
         group == "treatment",
-        baseline_post_revenue * treatment_multiplier * treatment_noise,
+        baseline_post_revenue * treatment_multiplier,
         baseline_post_revenue,
     )
 
@@ -87,6 +101,9 @@ if __name__ == "__main__":
 
     print("\nDistributional summary for post_experiment_revenue:")
     print(users["post_experiment_revenue"].describe())
+
+    print("\nCorrelation between pre_experiment_revenue and post_experiment_revenue:")
+    print(users["pre_experiment_revenue"].corr(users["post_experiment_revenue"]))
 
     group_sizes = users["group"].value_counts()
     size_difference = abs(group_sizes["control"] - group_sizes["treatment"])
