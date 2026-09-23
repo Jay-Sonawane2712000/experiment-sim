@@ -19,7 +19,7 @@ pip install -r requirements.txt
 python -m streamlit run dashboard\app.py
 ```
 
-Note: On Windows, use `venv\Scripts\activate`. On macOS/Linux, use `source venv/bin/activate`.
+Note: On Windows, use `venv\Scripts\activate`. On macOS or Linux, use `source venv/bin/activate`.
 
 Then open:
 
