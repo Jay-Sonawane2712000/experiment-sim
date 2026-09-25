@@ -8,7 +8,7 @@ Most candidates say they know A/B testing. This project demonstrates where naive
 
 ## Current Status
 
-The statistical modules and Streamlit dashboard are complete. Final future polish may include additional automated tests and deployment.
+The statistical modules and Streamlit dashboard are complete. Future polish may include additional automated tests and deployment.
 
 ## Dashboard Preview / How To Run
 
