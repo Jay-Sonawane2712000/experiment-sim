@@ -36,7 +36,7 @@ data/              Synthetic user-level revenue simulation
 modules/           Experimentation failure and correction modules
 dashboard/         Streamlit dashboard for interactive exploration
 outputs/figures/   Generated figures used in the README and dashboard
-tests/             Placeholder for statistical utility tests
+tests/             Statistical utility tests
 README.md          Project documentation
 requirements.txt   Python dependencies
 ```
